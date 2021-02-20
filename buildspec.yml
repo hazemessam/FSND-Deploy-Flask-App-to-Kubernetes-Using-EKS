@@ -1,6 +1,9 @@
 ---
 version: 0.2
 
+env:
+  parameter-store:
+    JWT_SECRET: JWT_SECRET
 
 phases:
   install:
@@ -12,9 +15,9 @@ phases:
       - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
       - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
       # Get latest stable release kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-        # Command for specific kubectl version:
-        #- curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+      # - curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+      # Command for specific kubectl version:
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.19.3/bin/linux/amd64/kubectl
       - chmod +x ./kubectl ./aws-iam-authenticator
       - echo `kubectl version`
       - export PATH=$PWD/:$PATH
@@ -26,6 +29,8 @@ phases:
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' simple_jwt_api.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
+        - pip install -r requirements.txt
+        - python -m pytest test_main.py
   build:
     commands:
       - docker build --tag $REPOSITORY_URI:$TAG .
@@ -36,5 +41,6 @@ phases:
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
       - kubectl apply -f simple_jwt_api.yml 
       - printf '[{"name":"simple_jwt_api","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
+
 artifacts:
   files: build.json
