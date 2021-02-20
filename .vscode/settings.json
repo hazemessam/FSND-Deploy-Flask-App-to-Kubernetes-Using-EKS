@@ -1,3 +1,9 @@
 {
-    "python.pythonPath": "/home/hazem/workdir/FSND-Deploy-Flask-App-to-Kubernetes-Using-EKS/venv/bin/python3"
+    "python.pythonPath": "/home/hazem/workdir/FSND-Deploy-Flask-App-to-Kubernetes-Using-EKS/venv/bin/python3",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
 }
